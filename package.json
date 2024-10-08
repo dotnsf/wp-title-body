@@ -1,0 +1,16 @@
+{
+    "name": "wp-title-body",
+    "version": "0.0.1",
+    "scripts": {
+        "start": "node app.js",
+        "test": "mocha --exit api.spec.js"
+    },
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "mysql": "^2.18.1"
+    },
+    "repository": {},
+    "engines": {
+        "node": "18.x"
+    }
+}
