@@ -1,9 +1,4 @@
-//. app.js
-var express = require( 'express' ),
-    app = express();
-
-app.use( express.Router() );
-
+//. readitems.js
 var Mysql = require( 'mysql' );
 
 //. env values
@@ -16,47 +11,6 @@ var mysql = Mysql.createPool( database_url );
 mysql.on( 'error', function( err ){
   console.log( 'error on working', err );
 });
-
-//. Remove HTML tags
-textify = function( html ){
-  var text = html;
-  if( text ){
-    //. 改行コード
-    text = text.split( "\n" ).join( "" );
-    
-    //. HTML コメント
-    var n1 = text.indexOf( "<!--" );
-    while( n1 > -1 ){
-      var n2 = text.indexOf( "-->", n1 + 4 );
-      if( n2 > n1 ){
-        var t1 = text.substring( 0, n1 );
-        var t2 = text.substring( n2 + 3 );
-        text = t1 + t2;
-      }else{
-        n1 ++;
-      }
-
-      n1 = text.indexOf( "<!--", n1 );
-    }
-
-    //. HTML タグ
-    n1 = text.indexOf( "<" );
-    while( n1 > -1 ){
-      var n2 = text.indexOf( ">", n1 + 1 );
-      if( n2 > n1 ){
-        var t1 = text.substring( 0, n1 );
-        var t2 = text.substring( n2 + 1 );
-        text = t1 + t2;
-      }else{
-        n1 ++;
-      }
-
-      n1 = text.indexOf( "<", n1 );
-    }
-  }
-
-  return text;
-}
 
 //. Read Items
 readItems = async function( limit, offset ){
@@ -88,12 +42,6 @@ readItems = async function( limit, offset ){
                 console.log( err );
                 resolve( { status: false, error: err } );
               }else{
-                //. textify
-                if( results && results.length ){
-                  for( var i = 0; i < results.length; i ++ ){
-                    results[i].content = textify( results[i].content );
-                  }
-                }
                 resolve( { status: true, results: results } );
               }
             });
@@ -111,15 +59,12 @@ readItems = async function( limit, offset ){
   });
 };
 
-
-app.get( '/', async function( req, res ){
-  res.contentType( 'application/json; charset=utf-8' );
-
-  var r = await readItems( db_limit, db_offset );
-  res.write( JSON.stringify( r, null, 2 ) );
-  res.end();
+readItems( db_limit, db_offset ).then( function( r ){
+  if( r && r.status ){
+    console.log( JSON.stringify( r.results, null, 2 ) );
+  }else{
+    console.log( "error", r.error );
+  }
+  process.exit( 0 );
 });
 
-var port = process.env.PORT || 8080;
-app.listen( port );
-console.log( "server starting on " + port + " ..." );
